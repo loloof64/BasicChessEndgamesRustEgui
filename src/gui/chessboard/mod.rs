@@ -1,7 +1,8 @@
 use eframe::{
     egui::{self, Ui},
-    epaint::{Color32, RectShape, Rounding, Shape},
 };
+
+mod painter;
 
 pub struct ChessBoard {
     size: f32,
@@ -28,23 +29,24 @@ impl ChessBoard {
             ////////////////////////////
             println!("Clicked !");
             ////////////////////////////
+        } else if response.drag_started() {
+            /////////////////////////////////
+            println!("Drag started !");
+            /////////////////////////////////
+        } else if response.drag_released() {
+            /////////////////////////////////
+            println!("Drag released !");
+            /////////////////////////////////
+        } else if response.dragged() {
+            /////////////////////////////////
+            println!("Dragged !");
+            /////////////////////////////////
         }
-
-        // TODO Attach some meta-data to the response which can be used by screen readers:
-        // response.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Checkbox, *on, ""));
 
         // 4. Paint!
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
-            ui.painter().add(Shape::Rect(RectShape {
-                rect,
-                fill: Color32::from_rgb(35, 136, 210),
-                rounding: Rounding::none(),
-                stroke: eframe::epaint::Stroke {
-                    width: 0.0,
-                    color: Color32::TRANSPARENT,
-                },
-            }));
+            painter::draw_background(ui, rect);
         }
         response
     }
