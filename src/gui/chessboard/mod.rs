@@ -47,6 +47,7 @@ impl ChessBoard {
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
+            painter::draw_cells(ui, rect);  
         }
         response
     }
