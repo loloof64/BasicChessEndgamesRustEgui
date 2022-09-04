@@ -19,7 +19,7 @@ struct MyApp {
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            board: ChessBoard::new(300.0),
+            board: ChessBoard::new(500.0),
         }
     }
 }

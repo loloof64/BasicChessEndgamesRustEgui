@@ -1,6 +1,7 @@
+use core::ascii;
 use eframe::{
     egui::Ui,
-    epaint::{Color32, Mesh, Pos2, Rect, RectShape, Rounding, Shape},
+    epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape},
 };
 use owlchess::{Board, File, Rank};
 
@@ -115,5 +116,57 @@ pub(crate) fn draw_pieces(
                 ui.painter().add(mesh);
             }
         }
+    }
+}
+
+pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect) {
+    let size = rect.size().x;
+    let cells_size = size * 0.111;
+
+    let font_size = cells_size * 0.6;
+    let text_color = Color32::from_rgb(255, 220, 10);
+
+    for file in 0..=7 {
+        let text = (ascii::escape_default(b'A').next().unwrap() + file) as char;
+        let text = format!("{}", text);
+        let x = rect.min.x + cells_size * (0.85 + file as f32);
+        let y1 = rect.min.y + cells_size * 0.001;
+        let y2 = rect.min.y + cells_size * 8.501;
+        ui.painter().text(
+            Pos2 { x, y: y1 },
+            eframe::emath::Align2::LEFT_TOP,
+            text.clone(),
+            FontId::monospace(font_size),
+            text_color,
+        );
+        ui.painter().text(
+            Pos2 { x, y: y2 },
+            eframe::emath::Align2::LEFT_TOP,
+            text.clone(),
+            FontId::monospace(font_size),
+            text_color,
+        );
+    }
+
+    for rank in 0..=7 {
+        let text = (ascii::escape_default(b'1').next().unwrap() + rank) as char;
+        let text = format!("{}", text);
+        let x1 = rect.min.x + cells_size * 0.1;
+        let x2 = rect.min.x + cells_size * 8.6;
+        let y = rect.min.y + cells_size * (7.8 - rank as f32);
+        ui.painter().text(
+            Pos2 { x: x1, y },
+            eframe::emath::Align2::LEFT_TOP,
+            text.clone(),
+            FontId::monospace(font_size),
+            text_color,
+        );
+        ui.painter().text(
+            Pos2 { x: x2, y },
+            eframe::emath::Align2::LEFT_TOP,
+            text.clone(),
+            FontId::monospace(font_size),
+            text_color,
+        );
     }
 }
