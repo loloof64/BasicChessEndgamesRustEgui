@@ -2,15 +2,19 @@ use eframe::{
     egui::{self, Ui},
 };
 
+use self::pieces_images::PiecesImages;
+
 mod painter;
+mod pieces_images;
 
 pub struct ChessBoard {
     size: f32,
+    pieces_images: PiecesImages,
 }
 
 impl ChessBoard {
     pub fn new(size: f32) -> Self {
-        Self { size }
+        Self { size, pieces_images: PiecesImages::new() }
     }
 
     pub fn widget(&self) -> impl egui::Widget + '_ {
@@ -47,7 +51,8 @@ impl ChessBoard {
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
-            painter::draw_cells(ui, rect);  
+            painter::draw_cells(ui, rect);
+            painter::draw_pieces(ui, rect, &self.pieces_images);
         }
         response
     }
