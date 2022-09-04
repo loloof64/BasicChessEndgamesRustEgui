@@ -55,14 +55,10 @@ impl ChessBoard {
         let desired_size = egui::vec2(self.size, self.size);
 
         // 2. Allocating space:
-        let (rect, response) = ui.allocate_exact_size(desired_size, egui::Sense::click_and_drag());
+        let (rect, response) = ui.allocate_exact_size(desired_size, egui::Sense::drag());
 
         // 3. Interact: Time to check for clicks!
-        if response.clicked() {
-            ////////////////////////////
-            println!("Clicked !");
-            ////////////////////////////
-        } else if response.drag_started() {
+        if response.drag_started() {
             let location = response.ctx.pointer_interact_pos().unwrap();
             let location = location - Pos2::ZERO;
             self.handle_drag_started(location, rect);
