@@ -16,6 +16,8 @@ pub(crate) struct DndData {
     piece_color: Color,
     x: f32,
     y: f32,
+    start_file: u8,
+    start_rank: u8,
 }
 
 pub struct ChessBoard {
@@ -85,6 +87,7 @@ impl ChessBoard {
                 &self.pieces_images,
                 self.position.clone(),
                 self.reversed,
+                &self.dnd_data,
             );
             painter::draw_coordinates(ui, rect, self.reversed);
             painter::draw_player_turn(ui, rect, self.position.clone());
@@ -111,11 +114,11 @@ impl ChessBoard {
         let row = row as u8;
 
         let file = if self.reversed { 7 - col } else { col };
-        let rank = if self.reversed { row } else { 7 - row };
+        let rank = if self.reversed { 7 - row } else { row };
 
         let square = self.position.get2(
             File::from_index(file as usize),
-            Rank::from_index((7 - rank) as usize),
+            Rank::from_index(rank as usize),
         );
         if square.is_free() {
             return;
@@ -129,6 +132,8 @@ impl ChessBoard {
             y,
             piece_type,
             piece_color,
+            start_file: file,
+            start_rank: rank,
         });
     }
 

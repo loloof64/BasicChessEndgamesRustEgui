@@ -61,6 +61,7 @@ pub(crate) fn draw_pieces(
     pieces_images: &PiecesImages,
     board_value: Board,
     reversed: bool,
+    dnd_data: &Option<DndData>,
 ) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
@@ -69,6 +70,21 @@ pub(crate) fn draw_pieces(
         for col in 0..=7 {
             let file = if reversed { 7 - col } else { col };
             let rank = if reversed { row } else { 7 - row };
+
+            let is_moved_piece = match dnd_data {
+                Some(DndData {
+                    start_file,
+                    start_rank,
+                    ..
+                }) => {
+                    *start_file == file && *start_rank == rank
+                },
+                _ => false,
+            };
+
+            if is_moved_piece {
+                continue;
+            }
 
             let x = rect.min.x + cells_size * (0.5 + col as f32);
             let y = rect.min.y + cells_size * (7.5 - row as f32);
@@ -81,7 +97,10 @@ pub(crate) fn draw_pieces(
                 },
             };
 
-            let square = board_value.get2(File::from_index(file), Rank::from_index(rank));
+            let square = board_value.get2(
+                File::from_index(file as usize),
+                Rank::from_index(rank as usize),
+            );
             if square.is_free() {
                 continue;
             }
