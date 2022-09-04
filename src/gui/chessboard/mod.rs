@@ -32,6 +32,10 @@ impl ChessBoard {
         move |ui: &mut egui::Ui| self.view(ui)
     }
 
+    pub fn toggle_orientation(&mut self) {
+        self.reversed = ! self.reversed;
+    }
+
     fn view(&self, ui: &mut Ui) -> egui::Response {
         // 1. Deciding widget size:
         let desired_size = egui::vec2(self.size, self.size);
