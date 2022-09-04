@@ -63,6 +63,7 @@ impl ChessBoard {
             painter::draw_cells(ui, rect);
             painter::draw_pieces(ui, rect, &self.pieces_images, self.position.clone());
             painter::draw_coordinates(ui, rect);
+            painter::draw_player_turn(ui, rect, self.position.clone());
         }
         response
     }

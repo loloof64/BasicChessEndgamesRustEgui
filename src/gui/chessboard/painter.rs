@@ -3,7 +3,7 @@ use eframe::{
     egui::Ui,
     epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape},
 };
-use owlchess::{Board, File, Rank};
+use owlchess::{Board, Color, File, Rank};
 
 use super::{pieces_images::PiecesImages, utils::get_piece_type_from};
 
@@ -169,4 +169,20 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect) {
             text_color,
         );
     }
+}
+
+pub(crate) fn draw_player_turn(ui: &mut Ui, rect: Rect, board_value: Board) {
+    let size = rect.size().x;
+    let cells_size = size * 0.111;
+    let x = rect.min.x + cells_size * 8.75;
+    let y = rect.min.y + cells_size * 8.75;
+
+    let white_turn = board_value.side() == Color::White;
+    let color = if white_turn {
+        Color32::WHITE
+    } else {
+        Color32::BLACK
+    };
+    ui.painter()
+        .circle_filled(Pos2 { x, y }, cells_size * 0.25, color);
 }
