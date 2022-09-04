@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 eframe = "0.19.0"
 egui_extras = {version = "0.19.0", features = ["svg"]}
+owlchess = "0.3.1"

@@ -1,20 +1,29 @@
-use eframe::{
-    egui::{self, Ui},
-};
+use eframe::egui::{self, Ui};
+
+use owlchess::Board;
 
 use self::pieces_images::PiecesImages;
 
 mod painter;
 mod pieces_images;
+mod utils;
 
 pub struct ChessBoard {
     size: f32,
     pieces_images: PiecesImages,
+    position: Board,
 }
 
 impl ChessBoard {
     pub fn new(size: f32) -> Self {
-        Self { size, pieces_images: PiecesImages::new() }
+        Self {
+            size,
+            pieces_images: PiecesImages::new(),
+            position: Board::from_fen(
+                "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+            )
+            .unwrap(),
+        }
     }
 
     pub fn widget(&self) -> impl egui::Widget + '_ {
@@ -52,7 +61,7 @@ impl ChessBoard {
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
             painter::draw_cells(ui, rect);
-            painter::draw_pieces(ui, rect, &self.pieces_images);
+            painter::draw_pieces(ui, rect, &self.pieces_images, self.position.clone());
         }
         response
     }
