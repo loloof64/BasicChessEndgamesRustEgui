@@ -12,6 +12,7 @@ pub struct ChessBoard {
     size: f32,
     pieces_images: PiecesImages,
     position: Board,
+    reversed: bool,
 }
 
 impl ChessBoard {
@@ -23,6 +24,7 @@ impl ChessBoard {
                 "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
             )
             .unwrap(),
+            reversed: false,
         }
     }
 
@@ -61,8 +63,14 @@ impl ChessBoard {
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
             painter::draw_cells(ui, rect);
-            painter::draw_pieces(ui, rect, &self.pieces_images, self.position.clone());
-            painter::draw_coordinates(ui, rect);
+            painter::draw_pieces(
+                ui,
+                rect,
+                &self.pieces_images,
+                self.position.clone(),
+                self.reversed,
+            );
+            painter::draw_coordinates(ui, rect, self.reversed);
             painter::draw_player_turn(ui, rect, self.position.clone());
         }
         response

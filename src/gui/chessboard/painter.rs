@@ -60,17 +60,18 @@ pub(crate) fn draw_pieces(
     rect: Rect,
     pieces_images: &PiecesImages,
     board_value: Board,
+    reversed: bool,
 ) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
     for row in 0..=7 {
         for col in 0..=7 {
-            let file = col;
-            let rank = 7 - row;
+            let file = if reversed { 7 - col } else { col };
+            let rank = if reversed { row } else { 7 - row };
 
-            let x = rect.min.x + cells_size * (0.5 + file as f32);
-            let y = rect.min.y + cells_size * (0.5 + rank as f32);
+            let x = rect.min.x + cells_size * (0.5 + col as f32);
+            let y = rect.min.y + cells_size * (7.5 - row as f32);
 
             let piece_rect = Rect {
                 min: Pos2 { x, y },
@@ -119,19 +120,20 @@ pub(crate) fn draw_pieces(
     }
 }
 
-pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect) {
+pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, reversed: bool) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
     let font_size = cells_size * 0.4;
     let text_color = Color32::from_rgb(255, 220, 10);
 
-    for file in 0..=7 {
+    for col in 0..=7 {
+        let file = if reversed { 7 - col } else { col };
         let text = (ascii::escape_default(b'A').next().unwrap() + file) as char;
         let text = format!("{}", text);
-        let x = rect.min.x + cells_size * (0.90 + file as f32);
+        let x = rect.min.x + cells_size * (0.90 + col as f32);
         let y1 = rect.min.y + cells_size * 0.05;
-        let y2 = rect.min.y + cells_size * 8.55 ;
+        let y2 = rect.min.y + cells_size * 8.55;
         ui.painter().text(
             Pos2 { x, y: y1 },
             eframe::emath::Align2::LEFT_TOP,
@@ -148,12 +150,13 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect) {
         );
     }
 
-    for rank in 0..=7 {
+    for row in 0..=7 {
+        let rank = if reversed { row } else { 7 - row };
         let text = (ascii::escape_default(b'1').next().unwrap() + rank) as char;
         let text = format!("{}", text);
         let x1 = rect.min.x + cells_size * 0.15;
         let x2 = rect.min.x + cells_size * 8.65;
-        let y = rect.min.y + cells_size * (7.8 - rank as f32);
+        let y = rect.min.y + cells_size * (0.8 + row as f32);
         ui.painter().text(
             Pos2 { x: x1, y },
             eframe::emath::Align2::LEFT_TOP,
