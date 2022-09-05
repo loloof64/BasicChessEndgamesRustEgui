@@ -94,6 +94,12 @@ impl ChessBoard {
     }
 
     fn handle_drag_started(&mut self, location: Vec2, rect: Rect) {
+        if let Some(dnd_data) = &self.dnd_data {
+            if dnd_data.has_pending_promotion {
+                return;
+            }
+        }
+
         let size = rect.size().x;
         let cells_size = size * 0.111;
 
@@ -115,7 +121,7 @@ impl ChessBoard {
 
         let square = self.position.get2(
             File::from_index(file as usize),
-            Rank::from_index(7-rank as usize),
+            Rank::from_index(7 - rank as usize),
         );
         if square.is_free() {
             return;
@@ -149,6 +155,11 @@ impl ChessBoard {
             return;
         }
 
+        let dnd_data = self.dnd_data.as_mut().unwrap();
+        if dnd_data.has_pending_promotion {
+            return;
+        }
+
         let size = rect.size().x;
         let cells_size = size * 0.111;
 
@@ -173,7 +184,7 @@ impl ChessBoard {
 
         let start_square = self.position.get2(
             File::from_index(dnd_data.start_file as usize),
-            Rank::from_index(7-dnd_data.start_rank as usize),
+            Rank::from_index(7 - dnd_data.start_rank as usize),
         );
         let is_promotion = match start_square.piece() {
             Some(piece_type) => match start_square.color() {
@@ -224,6 +235,9 @@ impl ChessBoard {
     fn handle_drag(&mut self, location: Vec2, rect: Rect) {
         match &mut self.dnd_data {
             Some(dnd_data) => {
+                if dnd_data.has_pending_promotion {
+                    return;
+                }
                 let size = rect.size().x;
                 let cells_size = size * 0.111;
 
