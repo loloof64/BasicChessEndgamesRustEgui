@@ -1,6 +1,6 @@
 use eframe::{
-    egui::{self, ImageButton, Sense},
-    epaint::{Mesh, Vec2},
+    egui::{self, ImageButton},
+    epaint::Vec2,
 };
 use gui::chessboard::ChessBoard;
 

@@ -3,7 +3,7 @@ use eframe::{
     epaint::{Pos2, Vec2},
 };
 
-use owlchess::{Board, Color, File, Make, Move, Piece, Rank};
+use owlchess::{Board, Color, File, Make, Piece, Rank};
 
 use self::{pieces_images::PiecesImages, utils::get_uci_move_for};
 
@@ -33,10 +33,7 @@ impl ChessBoard {
         Self {
             size,
             pieces_images: PiecesImages::new(),
-            position: Board::from_fen(
-                "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
-            )
-            .unwrap(),
+            position: Board::initial(),
             reversed: false,
             dnd_data: None,
         }
@@ -69,7 +66,7 @@ impl ChessBoard {
         } else if response.dragged() {
             let location = response.ctx.pointer_interact_pos().unwrap();
             let location = location - Pos2::ZERO;
-            self.handle_drag(location, rect);
+            self.handle_drag(location);
         }
 
         // 4. Paint!
@@ -190,7 +187,7 @@ impl ChessBoard {
         self.dnd_data = None;
     }
 
-    fn handle_drag(&mut self, location: Vec2, rect: Rect) {
+    fn handle_drag(&mut self, location: Vec2) {
         match &mut self.dnd_data {
             Some(dnd_data) => {
                 dnd_data.x = location.x;
