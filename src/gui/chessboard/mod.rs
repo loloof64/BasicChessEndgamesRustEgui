@@ -3,9 +3,9 @@ use eframe::{
     epaint::{Pos2, Vec2},
 };
 
-use owlchess::{Board, Color, File, Piece, Rank};
+use owlchess::{Board, Color, File, Make, Move, Piece, Rank};
 
-use self::pieces_images::PiecesImages;
+use self::{pieces_images::PiecesImages, utils::get_uci_move_for};
 
 mod painter;
 mod pieces_images;
@@ -134,6 +134,52 @@ impl ChessBoard {
     }
 
     fn handle_drag_released(&mut self, location: Vec2, rect: Rect) {
+        let size = rect.size().x;
+        let cells_size = size * 0.111;
+
+        let x = location.x - rect.min.x;
+        let y = location.y - rect.min.y;
+
+        let col = ((x - cells_size * 0.5) / cells_size).floor() as i32;
+        let row = ((y - cells_size * 0.5) / cells_size).floor() as i32;
+
+        if col < 0 || col > 7 || row < 0 || row > 7 {
+            self.dnd_data = None;
+            return;
+        }
+
+        let col = col as u8;
+        let row = row as u8;
+
+        let file = if self.reversed { 7 - col } else { col };
+        let rank = if self.reversed { 7 - row } else { row };
+
+        if let Some(dnd_data) = &self.dnd_data {
+            let uci_move = get_uci_move_for(
+                dnd_data.start_file,
+                dnd_data.start_rank,
+                file as u8,
+                rank as u8,
+                None,
+            );
+            let matching_move = uci_move.into_move(&self.position);
+
+            let move_san = match matching_move {
+                Ok(matching_move) => match matching_move.san(&self.position) {
+                    Ok(san) => Some(san.to_string()),
+                    _ => None,
+                },
+                Err(_) => None,
+            };
+
+            if let Ok(matching_move) = matching_move {
+                match matching_move.make_raw(&mut self.position) {
+                    Ok(_) => println!("{}", move_san.unwrap()),
+                    _ => {}
+                }
+            }
+        }
+
         self.dnd_data = None;
     }
 
