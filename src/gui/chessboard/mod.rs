@@ -195,6 +195,8 @@ impl ChessBoard {
         };
 
         if is_promotion {
+            dnd_data.end_file = file;
+            dnd_data.end_rank = rank;
             dnd_data.has_pending_promotion = true;
             return;
         }
@@ -219,6 +221,7 @@ impl ChessBoard {
 
             if let Ok(matching_move) = matching_move {
                 match matching_move.make_raw(&mut self.position) {
+                    //TODO emit san
                     Ok(_) => println!("{}", move_san.unwrap()),
                     _ => {}
                 }
@@ -256,5 +259,47 @@ impl ChessBoard {
             }
             _ => {}
         }
+    }
+
+    fn commit_promotion(&mut self, promotion_type: char) {
+        // There must be a pending promotion
+        match &self.dnd_data {
+            Some(dnd_data) => {
+                if !dnd_data.has_pending_promotion {
+                    return;
+                }
+            }
+            _ => return,
+        }
+
+        let dnd_data = self.dnd_data.as_ref().unwrap();
+
+        let uci_move = get_uci_move_for(
+            dnd_data.start_file,
+            dnd_data.start_rank,
+            dnd_data.end_file,
+            dnd_data.end_rank,
+            Some(promotion_type.to_ascii_lowercase()),
+        );
+
+        let matching_move = uci_move.into_move(&self.position);
+
+        let move_san = match matching_move {
+            Ok(matching_move) => match matching_move.san(&self.position) {
+                Ok(san) => Some(san.to_string()),
+                _ => None,
+            },
+            Err(_) => None,
+        };
+
+        if let Ok(matching_move) = matching_move {
+            match matching_move.make_raw(&mut self.position) {
+                //TODO emit san
+                Ok(_) => println!("{}", move_san.unwrap()),
+                _ => {}
+            }
+        }
+
+        self.dnd_data = None;
     }
 }

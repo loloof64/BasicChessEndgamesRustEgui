@@ -402,19 +402,19 @@ pub(crate) fn draw_promotion_buttons(ui: &mut Ui, rect: Rect, board: &mut ChessB
         let knight_button = ImageButton::new(knight_image.texture_id(ctx), buttons_size);
 
         if ui.put(queen_button_rect, queen_button).clicked() {
-            println!("Queen !");
+            board.commit_promotion('q');
         }
 
         if ui.put(rook_button_rect, rook_button).clicked() {
-            println!("Rook !");
+            board.commit_promotion('r');
         }
 
         if ui.put(bishop_button_rect, bishop_button).clicked() {
-            println!("Bishop !");
+            board.commit_promotion('b');
         }
 
         if ui.put(knight_button_rect, knight_button).clicked() {
-            println!("Knight !");
+            board.commit_promotion('n');
         }
     }
 }
