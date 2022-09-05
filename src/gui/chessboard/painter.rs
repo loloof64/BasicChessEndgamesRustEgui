@@ -122,7 +122,7 @@ pub(crate) fn draw_pieces(
             }
 
             let x = rect.min.x + cells_size * (0.5 + col as f32);
-            let y = rect.min.y + cells_size * (7.5 - row as f32);
+            let y = rect.min.y + cells_size * (0.5 + row as f32);
 
             let piece_rect = Rect {
                 min: Pos2 { x, y },
@@ -134,7 +134,7 @@ pub(crate) fn draw_pieces(
 
             let square = board_value.get2(
                 File::from_index(file as usize),
-                Rank::from_index(rank as usize),
+                Rank::from_index(7-rank as usize),
             );
             if square.is_free() {
                 continue;

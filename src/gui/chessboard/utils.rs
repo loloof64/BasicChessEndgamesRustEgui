@@ -22,7 +22,7 @@ pub(crate) fn get_uci_move_for(
 
 fn parse_square_coords(file: u8, rank: u8) -> Coord {
     let file = File::from_index(file as usize);
-    let rank = Rank::from_index(rank as usize);
+    let rank = Rank::from_index(7-rank as usize);
 
     Coord::from_parts(file, rank)
 }

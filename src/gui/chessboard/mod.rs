@@ -11,6 +11,7 @@ mod painter;
 mod pieces_images;
 mod utils;
 
+#[derive(Debug)]
 pub(crate) struct DndData {
     piece_type: Piece,
     piece_color: Color,
@@ -20,6 +21,7 @@ pub(crate) struct DndData {
     start_rank: u8,
     end_file: u8,
     end_rank: u8,
+    has_pending_promotion: bool,
 }
 
 pub struct ChessBoard {
@@ -109,11 +111,11 @@ impl ChessBoard {
         let row = row as u8;
 
         let file = if self.reversed { 7 - col } else { col };
-        let rank = if self.reversed { 7 - row } else { row };
+        let rank = if self.reversed { row } else { 7 - row };
 
         let square = self.position.get2(
             File::from_index(file as usize),
-            Rank::from_index(rank as usize),
+            Rank::from_index(7-rank as usize),
         );
         if square.is_free() {
             return;
@@ -138,10 +140,15 @@ impl ChessBoard {
             start_rank: rank,
             end_file: file,
             end_rank: rank,
+            has_pending_promotion: false,
         });
     }
 
     fn handle_drag_released(&mut self, location: Vec2, rect: Rect) {
+        if self.dnd_data.is_none() {
+            return;
+        }
+
         let size = rect.size().x;
         let cells_size = size * 0.111;
 
@@ -160,7 +167,30 @@ impl ChessBoard {
         let row = row as u8;
 
         let file = if self.reversed { 7 - col } else { col };
-        let rank = if self.reversed { 7 - row } else { row };
+        let rank = if self.reversed { row } else { 7 - row };
+
+        let dnd_data = self.dnd_data.as_mut().unwrap();
+
+        let start_square = self.position.get2(
+            File::from_index(dnd_data.start_file as usize),
+            Rank::from_index(7-dnd_data.start_rank as usize),
+        );
+        let is_promotion = match start_square.piece() {
+            Some(piece_type) => match start_square.color() {
+                Some(piece_color) => {
+                    piece_type == Piece::Pawn
+                        && ((piece_color == Color::White && rank == 7)
+                            || (piece_color == Color::Black && rank == 0))
+                }
+                _ => false,
+            },
+            _ => false,
+        };
+
+        if is_promotion {
+            dnd_data.has_pending_promotion = true;
+            return;
+        }
 
         if let Some(dnd_data) = &self.dnd_data {
             let uci_move = get_uci_move_for(
