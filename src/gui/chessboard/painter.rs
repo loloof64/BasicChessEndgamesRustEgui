@@ -261,7 +261,7 @@ pub(crate) fn draw_moved_piece(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
         };
 
         {
-            let piece_rect = if board.reversed {
+            let piece_rect = if board.reversed && dnd_data.has_pending_promotion {
                 let center = rect.center();
                 let dnd_position = Pos2 {
                     x: dnd_data.x,
