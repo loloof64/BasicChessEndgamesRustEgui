@@ -88,7 +88,7 @@ impl ChessBoard {
             );
             painter::draw_coordinates(ui, rect, self.reversed);
             painter::draw_player_turn(ui, rect, self.position.clone());
-            painter::draw_moved_piece(ui, rect, &self.dnd_data, &self.pieces_images);
+            painter::draw_moved_piece(ui, rect, self.reversed, &self.dnd_data, &self.pieces_images);
         }
         response
     }

@@ -134,7 +134,7 @@ pub(crate) fn draw_pieces(
 
             let square = board_value.get2(
                 File::from_index(file as usize),
-                Rank::from_index(7-rank as usize),
+                Rank::from_index(7 - rank as usize),
             );
             if square.is_free() {
                 continue;
@@ -247,6 +247,7 @@ pub(crate) fn draw_player_turn(ui: &mut Ui, rect: Rect, board_value: Board) {
 pub(crate) fn draw_moved_piece(
     ui: &mut Ui,
     rect: Rect,
+    reversed: bool,
     dnd_data: &Option<DndData>,
     pieces_images: &PiecesImages,
 ) {
@@ -273,15 +274,35 @@ pub(crate) fn draw_moved_piece(
         };
 
         {
-            let piece_rect = Rect {
-                min: Pos2 {
-                    x: dnd_data.x - cells_size * 0.5,
-                    y: dnd_data.y - cells_size * 0.5,
-                },
-                max: Pos2 {
-                    x: dnd_data.x + cells_size - cells_size * 0.5,
-                    y: dnd_data.y + cells_size - cells_size * 0.5,
-                },
+            let piece_rect = if reversed {
+                let center = rect.center();
+                let dnd_position = Pos2 {
+                    x: dnd_data.x,
+                    y: dnd_data.y,
+                };
+                let half_distance = center - dnd_position;
+                let new_position = center + half_distance;
+                Rect {
+                    min: Pos2 {
+                        x: new_position.x - cells_size * 0.5,
+                        y: new_position.y - cells_size * 0.5,
+                    },
+                    max: Pos2 {
+                        x: new_position.x + cells_size - cells_size * 0.5,
+                        y: new_position.y + cells_size - cells_size * 0.5,
+                    },
+                }
+            } else {
+                Rect {
+                    min: Pos2 {
+                        x: dnd_data.x - cells_size * 0.5,
+                        y: dnd_data.y - cells_size * 0.5,
+                    },
+                    max: Pos2 {
+                        x: dnd_data.x + cells_size - cells_size * 0.5,
+                        y: dnd_data.y + cells_size - cells_size * 0.5,
+                    },
+                }
             };
             let ctx = ui.ctx();
             let mut mesh = Mesh::with_texture(image.texture_id(ctx));
