@@ -123,6 +123,13 @@ impl ChessBoard {
         let piece_type = square.piece().unwrap();
         let piece_color = square.color().unwrap();
 
+        let player_turn = self.position.side();
+        let is_not_our_turn = player_turn != piece_color;
+
+        if is_not_our_turn {
+            return;
+        }
+
         self.dnd_data = Some(DndData {
             x,
             y,
