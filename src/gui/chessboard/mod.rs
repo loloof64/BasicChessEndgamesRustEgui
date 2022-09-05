@@ -77,26 +77,12 @@ impl ChessBoard {
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
-            painter::draw_cells(ui, rect, self.reversed, &self.dnd_data);
-            painter::draw_pieces(
-                ui,
-                rect,
-                &self.pieces_images,
-                self.position.clone(),
-                self.reversed,
-                &self.dnd_data,
-            );
-            painter::draw_coordinates(ui, rect, self.reversed);
-            painter::draw_player_turn(ui, rect, self.position.clone());
-            painter::draw_moved_piece(ui, rect, self.reversed, &self.dnd_data, &self.pieces_images);
-            painter::draw_promotion_buttons(
-                ui,
-                rect,
-                self.reversed,
-                self.position.side() == Color::White,
-                &self.dnd_data,
-                &self.pieces_images,
-            );
+            painter::draw_cells(ui, rect, &self);
+            painter::draw_pieces(ui, rect, &self);
+            painter::draw_coordinates(ui, rect, self);
+            painter::draw_player_turn(ui, rect, &self);
+            painter::draw_moved_piece(ui, rect, &self);
+            painter::draw_promotion_buttons(ui, rect, self);
         }
         response
     }

@@ -3,9 +3,9 @@ use eframe::{
     egui::{ImageButton, Ui},
     epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape, Vec2},
 };
-use owlchess::{Board, Color, File, Rank};
+use owlchess::{Color, File, Rank};
 
-use super::{pieces_images::PiecesImages, utils::get_piece_type_from, DndData};
+use super::{utils::get_piece_type_from, ChessBoard, DndData};
 
 pub(crate) fn draw_background(ui: &mut Ui, rect: Rect) {
     ui.painter().add(Shape::Rect(RectShape {
@@ -19,37 +19,37 @@ pub(crate) fn draw_background(ui: &mut Ui, rect: Rect) {
     }));
 }
 
-pub(crate) fn draw_cells(ui: &mut Ui, rect: Rect, reversed: bool, dnd_data: &Option<DndData>) {
+pub(crate) fn draw_cells(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
     for row in 0..=7 {
         for col in 0..=7 {
-            let file = (if reversed { 7 - col } else { col }) as u8;
-            let rank = (if reversed { 7 - row } else { row }) as u8;
+            let file = (if board.reversed { 7 - col } else { col }) as u8;
+            let rank = (if board.reversed { 7 - row } else { row }) as u8;
 
             let white_cell = (col + row) % 2 == 0;
 
-            let is_dnd_start_cell = match dnd_data {
+            let is_dnd_start_cell = match board.dnd_data {
                 Some(DndData {
                     start_file,
                     start_rank,
                     ..
-                }) => file == *start_file && rank == *start_rank,
+                }) => file == start_file && rank == start_rank,
                 None => false,
             };
 
-            let is_dnd_end_cell = match dnd_data {
+            let is_dnd_end_cell = match board.dnd_data {
                 Some(DndData {
                     end_file, end_rank, ..
-                }) => file == *end_file && rank == *end_rank,
+                }) => file == end_file && rank == end_rank,
                 None => false,
             };
 
-            let is_dnd_cross_cell = match dnd_data {
+            let is_dnd_cross_cell = match board.dnd_data {
                 Some(DndData {
                     end_file, end_rank, ..
-                }) => file == *end_file || rank == *end_rank,
+                }) => file == end_file || rank == end_rank,
                 None => false,
             };
 
@@ -92,28 +92,21 @@ pub(crate) fn draw_cells(ui: &mut Ui, rect: Rect, reversed: bool, dnd_data: &Opt
     }
 }
 
-pub(crate) fn draw_pieces(
-    ui: &mut Ui,
-    rect: Rect,
-    pieces_images: &PiecesImages,
-    board_value: Board,
-    reversed: bool,
-    dnd_data: &Option<DndData>,
-) {
+pub(crate) fn draw_pieces(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
     for row in 0..=7 {
         for col in 0..=7 {
-            let file = if reversed { 7 - col } else { col };
-            let rank = if reversed { row } else { 7 - row };
+            let file = if board.reversed { 7 - col } else { col };
+            let rank = if board.reversed { row } else { 7 - row };
 
-            let is_moved_piece = match dnd_data {
+            let is_moved_piece = match board.dnd_data {
                 Some(DndData {
                     start_file,
                     start_rank,
                     ..
-                }) => *start_file == file && *start_rank == rank,
+                }) => start_file == file && start_rank == rank,
                 _ => false,
             };
 
@@ -132,7 +125,7 @@ pub(crate) fn draw_pieces(
                 },
             };
 
-            let square = board_value.get2(
+            let square = board.position.get2(
                 File::from_index(file as usize),
                 Rank::from_index(7 - rank as usize),
             );
@@ -145,18 +138,18 @@ pub(crate) fn draw_pieces(
             let piece_type = get_piece_type_from(piece_type.unwrap(), piece_color.unwrap());
 
             let image = match piece_type {
-                'P' => &pieces_images.wp,
-                'N' => &pieces_images.wn,
-                'B' => &pieces_images.wb,
-                'R' => &pieces_images.wr,
-                'Q' => &pieces_images.wq,
-                'K' => &pieces_images.wk,
-                'p' => &pieces_images.bp,
-                'n' => &pieces_images.bn,
-                'b' => &pieces_images.bb,
-                'r' => &pieces_images.br,
-                'q' => &pieces_images.bq,
-                'k' => &pieces_images.bk,
+                'P' => &board.pieces_images.wp,
+                'N' => &board.pieces_images.wn,
+                'B' => &board.pieces_images.wb,
+                'R' => &board.pieces_images.wr,
+                'Q' => &board.pieces_images.wq,
+                'K' => &board.pieces_images.wk,
+                'p' => &board.pieces_images.bp,
+                'n' => &board.pieces_images.bn,
+                'b' => &board.pieces_images.bb,
+                'r' => &board.pieces_images.br,
+                'q' => &board.pieces_images.bq,
+                'k' => &board.pieces_images.bk,
                 _ => panic!("Not recognized piece {}", piece_type),
             };
 
@@ -174,7 +167,7 @@ pub(crate) fn draw_pieces(
     }
 }
 
-pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, reversed: bool) {
+pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
@@ -182,7 +175,7 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, reversed: bool) {
     let text_color = Color32::from_rgb(255, 220, 10);
 
     for col in 0..=7 {
-        let file = if reversed { 7 - col } else { col };
+        let file = if board.reversed { 7 - col } else { col };
         let text = (ascii::escape_default(b'A').next().unwrap() + file) as char;
         let text = format!("{}", text);
         let x = rect.min.x + cells_size * (0.90 + col as f32);
@@ -205,7 +198,7 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, reversed: bool) {
     }
 
     for row in 0..=7 {
-        let rank = if reversed { row } else { 7 - row };
+        let rank = if board.reversed { row } else { 7 - row };
         let text = (ascii::escape_default(b'1').next().unwrap() + rank) as char;
         let text = format!("{}", text);
         let x1 = rect.min.x + cells_size * 0.15;
@@ -228,13 +221,13 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, reversed: bool) {
     }
 }
 
-pub(crate) fn draw_player_turn(ui: &mut Ui, rect: Rect, board_value: Board) {
+pub(crate) fn draw_player_turn(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
     let x = rect.min.x + cells_size * 8.75;
     let y = rect.min.y + cells_size * 8.75;
 
-    let white_turn = board_value.side() == Color::White;
+    let white_turn = board.position.side() == Color::White;
     let color = if white_turn {
         Color32::WHITE
     } else {
@@ -244,37 +237,31 @@ pub(crate) fn draw_player_turn(ui: &mut Ui, rect: Rect, board_value: Board) {
         .circle_filled(Pos2 { x, y }, cells_size * 0.25, color);
 }
 
-pub(crate) fn draw_moved_piece(
-    ui: &mut Ui,
-    rect: Rect,
-    reversed: bool,
-    dnd_data: &Option<DndData>,
-    pieces_images: &PiecesImages,
-) {
+pub(crate) fn draw_moved_piece(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
-    if let Some(dnd_data) = dnd_data {
+    if let Some(dnd_data) = &board.dnd_data {
         let piece_type = get_piece_type_from(dnd_data.piece_type, dnd_data.piece_color);
 
         let image = match piece_type {
-            'P' => &pieces_images.wp,
-            'N' => &pieces_images.wn,
-            'B' => &pieces_images.wb,
-            'R' => &pieces_images.wr,
-            'Q' => &pieces_images.wq,
-            'K' => &pieces_images.wk,
-            'p' => &pieces_images.bp,
-            'n' => &pieces_images.bn,
-            'b' => &pieces_images.bb,
-            'r' => &pieces_images.br,
-            'q' => &pieces_images.bq,
-            'k' => &pieces_images.bk,
+            'P' => &board.pieces_images.wp,
+            'N' => &board.pieces_images.wn,
+            'B' => &board.pieces_images.wb,
+            'R' => &board.pieces_images.wr,
+            'Q' => &board.pieces_images.wq,
+            'K' => &board.pieces_images.wk,
+            'p' => &board.pieces_images.bp,
+            'n' => &board.pieces_images.bn,
+            'b' => &board.pieces_images.bb,
+            'r' => &board.pieces_images.br,
+            'q' => &board.pieces_images.bq,
+            'k' => &board.pieces_images.bk,
             _ => panic!("Not recognized piece {}", piece_type),
         };
 
         {
-            let piece_rect = if reversed {
+            let piece_rect = if board.reversed {
                 let center = rect.center();
                 let dnd_position = Pos2 {
                     x: dnd_data.x,
@@ -316,16 +303,9 @@ pub(crate) fn draw_moved_piece(
     }
 }
 
-pub(crate) fn draw_promotion_buttons(
-    ui: &mut Ui,
-    rect: Rect,
-    reversed: bool,
-    white_turn: bool,
-    dnd_data: &Option<DndData>,
-    pieces_images: &PiecesImages,
-) {
+pub(crate) fn draw_promotion_buttons(ui: &mut Ui, rect: Rect, board: &mut ChessBoard) {
     // There must be a pending promotion
-    match dnd_data {
+    match &board.dnd_data {
         Some(dnd_data) => {
             if !dnd_data.has_pending_promotion {
                 return;
@@ -338,7 +318,9 @@ pub(crate) fn draw_promotion_buttons(
     let cells_size = size * 0.111;
     let buttons_size = cells_size * 1.5;
 
-    let buttons_at_bottom = (reversed && !white_turn) || (!reversed && white_turn);
+    let white_turn = board.position.side() == Color::White;
+
+    let buttons_at_bottom = (board.reversed && !white_turn) || (!board.reversed && white_turn);
     let buttons_bar_x = rect.min.x + cells_size * 0.8;
     let buttons_bar_y = rect.min.y
         + (if buttons_at_bottom {
@@ -372,46 +354,25 @@ pub(crate) fn draw_promotion_buttons(
         y: buttons_bar_y,
     };
 
-    ui.painter().circle_filled(
-        queen_button_pos + buttons_size * 0.5,
-        buttons_size.x * 0.5,
-        Color32::WHITE,
-    );
-    ui.painter().circle_filled(
-        rook_button_pos + buttons_size * 0.5,
-        buttons_size.x * 0.5,
-        Color32::WHITE,
-    );
-    ui.painter().circle_filled(
-        bishop_button_pos + buttons_size * 0.5,
-        buttons_size.x * 0.5,
-        Color32::WHITE,
-    );
-    ui.painter().circle_filled(
-        knight_button_pos + buttons_size * 0.5,
-        buttons_size.x * 0.5,
-        Color32::WHITE,
-    );
-
     let queen_image = if white_turn {
-        &pieces_images.wq
+        &board.pieces_images.wq
     } else {
-        &pieces_images.bq
+        &board.pieces_images.bq
     };
     let rook_image = if white_turn {
-        &pieces_images.wr
+        &board.pieces_images.wr
     } else {
-        &pieces_images.br
+        &board.pieces_images.br
     };
     let bishop_image = if white_turn {
-        &pieces_images.wb
+        &board.pieces_images.wb
     } else {
-        &pieces_images.bb
+        &board.pieces_images.bb
     };
     let knight_image = if white_turn {
-        &pieces_images.wn
+        &board.pieces_images.wn
     } else {
-        &pieces_images.bn
+        &board.pieces_images.bn
     };
 
     let queen_button_rect = Rect {
