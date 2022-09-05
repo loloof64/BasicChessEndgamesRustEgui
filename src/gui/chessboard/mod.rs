@@ -22,6 +22,7 @@ pub(crate) struct DndData {
     end_file: u8,
     end_rank: u8,
     has_pending_promotion: bool,
+    started_with_reversed_board: bool,
 }
 
 pub struct ChessBoard {
@@ -141,6 +142,7 @@ impl ChessBoard {
             end_file: file,
             end_rank: rank,
             has_pending_promotion: false,
+            started_with_reversed_board: self.reversed,
         });
     }
 
