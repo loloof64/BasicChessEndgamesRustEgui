@@ -18,6 +18,8 @@ pub(crate) struct DndData {
     y: f32,
     start_file: u8,
     start_rank: u8,
+    end_file: u8,
+    end_rank: u8,
 }
 
 pub struct ChessBoard {
@@ -66,14 +68,14 @@ impl ChessBoard {
         } else if response.dragged() {
             let location = response.ctx.pointer_interact_pos().unwrap();
             let location = location - Pos2::ZERO;
-            self.handle_drag(location);
+            self.handle_drag(location, rect);
         }
 
         // 4. Paint!
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
-            painter::draw_cells(ui, rect);
+            painter::draw_cells(ui, rect, self.reversed, &self.dnd_data);
             painter::draw_pieces(
                 ui,
                 rect,
@@ -134,6 +136,8 @@ impl ChessBoard {
             piece_color,
             start_file: file,
             start_rank: rank,
+            end_file: file,
+            end_rank: rank,
         });
     }
 
@@ -187,11 +191,28 @@ impl ChessBoard {
         self.dnd_data = None;
     }
 
-    fn handle_drag(&mut self, location: Vec2) {
+    fn handle_drag(&mut self, location: Vec2, rect: Rect) {
         match &mut self.dnd_data {
             Some(dnd_data) => {
+                let size = rect.size().x;
+                let cells_size = size * 0.111;
+
+                let x = location.x - rect.min.x;
+                let y = location.y - rect.min.y;
+
+                let col = ((x - cells_size * 0.5) / cells_size).floor() as i32;
+                let row = ((y - cells_size * 0.5) / cells_size).floor() as i32;
+
+                let col = col as u8;
+                let row = row as u8;
+
+                let file = if self.reversed { 7 - col } else { col };
+                let rank = if self.reversed { 7 - row } else { row };
+
                 dnd_data.x = location.x;
                 dnd_data.y = location.y;
+                dnd_data.end_file = file;
+                dnd_data.end_rank = rank;
             }
             _ => {}
         }
