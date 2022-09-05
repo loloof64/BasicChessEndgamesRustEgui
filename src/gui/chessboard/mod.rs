@@ -89,6 +89,14 @@ impl ChessBoard {
             painter::draw_coordinates(ui, rect, self.reversed);
             painter::draw_player_turn(ui, rect, self.position.clone());
             painter::draw_moved_piece(ui, rect, self.reversed, &self.dnd_data, &self.pieces_images);
+            painter::draw_promotion_buttons(
+                ui,
+                rect,
+                self.reversed,
+                self.position.side() == Color::White,
+                &self.dnd_data,
+                &self.pieces_images,
+            );
         }
         response
     }

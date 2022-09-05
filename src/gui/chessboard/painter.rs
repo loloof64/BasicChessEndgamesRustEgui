@@ -1,7 +1,7 @@
 use core::ascii;
 use eframe::{
     egui::Ui,
-    epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape},
+    epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape, Vec2},
 };
 use owlchess::{Board, Color, File, Rank};
 
@@ -313,5 +313,152 @@ pub(crate) fn draw_moved_piece(
             );
             ui.painter().add(mesh);
         }
+    }
+}
+
+pub(crate) fn draw_promotion_buttons(
+    ui: &mut Ui,
+    rect: Rect,
+    reversed: bool,
+    white_turn: bool,
+    dnd_data: &Option<DndData>,
+    pieces_images: &PiecesImages,
+) {
+    // There must be a pending promotion
+    match dnd_data {
+        Some(dnd_data) => {
+            if !dnd_data.has_pending_promotion {
+                return;
+            }
+        }
+        _ => return,
+    }
+
+    let size = rect.size().x;
+    let cells_size = size * 0.111;
+    let buttons_size = cells_size * 1.5;
+
+    let buttons_at_bottom = (reversed && !white_turn) || (!reversed && white_turn);
+    let buttons_bar_x = rect.min.x + cells_size * 0.8;
+    let buttons_bar_y = rect.min.y
+        + (if buttons_at_bottom {
+            cells_size * 6.8
+        } else {
+            cells_size * 0.8
+        });
+    let queen_button_x = buttons_bar_x;
+    let rook_button_x = rect.min.x + cells_size * 2.8;
+    let bishop_button_x = rect.min.x + cells_size * 4.8;
+    let knight_button_x = rect.min.x + cells_size * 6.8;
+
+    let buttons_size = Vec2 {
+        x: buttons_size,
+        y: buttons_size,
+    };
+    let queen_button_pos = Pos2 {
+        x: queen_button_x,
+        y: buttons_bar_y,
+    };
+    let rook_button_pos = Pos2 {
+        x: rook_button_x,
+        y: buttons_bar_y,
+    };
+    let bishop_button_pos = Pos2 {
+        x: bishop_button_x,
+        y: buttons_bar_y,
+    };
+    let knight_button_pos = Pos2 {
+        x: knight_button_x,
+        y: buttons_bar_y,
+    };
+
+    ui.painter().circle_filled(
+        queen_button_pos + buttons_size * 0.5,
+        buttons_size.x * 0.5,
+        Color32::WHITE,
+    );
+    ui.painter().circle_filled(
+        rook_button_pos + buttons_size * 0.5,
+        buttons_size.x * 0.5,
+        Color32::WHITE,
+    );
+    ui.painter().circle_filled(
+        bishop_button_pos + buttons_size * 0.5,
+        buttons_size.x * 0.5,
+        Color32::WHITE,
+    );
+    ui.painter().circle_filled(
+        knight_button_pos + buttons_size * 0.5,
+        buttons_size.x * 0.5,
+        Color32::WHITE,
+    );
+
+    let queen_image = if white_turn {&pieces_images.wq} else {&pieces_images.bq};
+    let rook_image = if white_turn {&pieces_images.wr} else {&pieces_images.br};
+    let bishop_image = if white_turn {&pieces_images.wb} else {&pieces_images.bb};
+    let knight_image = if white_turn {&pieces_images.wn} else {&pieces_images.bn};
+
+    let queen_button_rect = Rect {
+        min: queen_button_pos,
+        max: queen_button_pos + buttons_size
+    };
+
+    let rook_button_rect = Rect {
+        min: rook_button_pos,
+        max: rook_button_pos + buttons_size
+    };
+
+    let bishop_button_rect = Rect {
+        min: bishop_button_pos,
+        max: bishop_button_pos + buttons_size
+    };
+
+    let knight_button_rect = Rect {
+        min: knight_button_pos,
+        max: knight_button_pos + buttons_size
+    };
+
+    {
+        let ctx = ui.ctx();
+            let mut mesh = Mesh::with_texture(queen_image.texture_id(ctx));
+            mesh.add_rect_with_uv(
+                queen_button_rect,
+                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                Color32::WHITE,
+            );
+            ui.painter().add(mesh);
+    }
+
+    {
+        let ctx = ui.ctx();
+            let mut mesh = Mesh::with_texture(rook_image.texture_id(ctx));
+            mesh.add_rect_with_uv(
+                rook_button_rect,
+                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                Color32::WHITE,
+            );
+            ui.painter().add(mesh);
+    }
+
+    {
+        let ctx = ui.ctx();
+            let mut mesh = Mesh::with_texture(bishop_image.texture_id(ctx));
+            mesh.add_rect_with_uv(
+                bishop_button_rect,
+                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                Color32::WHITE,
+            );
+            ui.painter().add(mesh);
+    }
+
+    {
+        let ctx = ui.ctx();
+            let mut mesh = Mesh::with_texture(knight_image.texture_id(ctx));
+            mesh.add_rect_with_uv(
+                knight_button_rect,
+                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                Color32::WHITE,
+            );
+            ui.painter().add(mesh);
     }
 }
