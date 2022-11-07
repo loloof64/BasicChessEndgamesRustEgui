@@ -31,16 +31,18 @@ pub struct ChessBoard {
     position: Board,
     reversed: bool,
     dnd_data: Option<DndData>,
+    on_move_done: Box<dyn Fn(&String) -> ()>,
 }
 
 impl ChessBoard {
-    pub fn new(size: f32) -> Self {
+    pub fn new(size: f32, on_move_done: Box<dyn Fn(&String) -> ()>) -> Self {
         Self {
             size,
             pieces_images: PiecesImages::new(),
             position: Board::initial(),
             reversed: false,
             dnd_data: None,
+            on_move_done,
         }
     }
 
@@ -221,8 +223,7 @@ impl ChessBoard {
 
             if let Ok(matching_move) = matching_move {
                 match matching_move.make_raw(&mut self.position) {
-                    //TODO emit san
-                    Ok(_) => println!("{}", move_san.unwrap()),
+                    Ok(_) => (self.on_move_done)(&move_san.unwrap()),
                     _ => {}
                 }
             }
@@ -294,8 +295,7 @@ impl ChessBoard {
 
         if let Ok(matching_move) = matching_move {
             match matching_move.make_raw(&mut self.position) {
-                //TODO emit san
-                Ok(_) => println!("{}", move_san.unwrap()),
+                Ok(_) => (self.on_move_done)(&move_san.unwrap()),
                 _ => {}
             }
         }
