@@ -223,7 +223,10 @@ impl ChessBoard {
 
             if let Ok(matching_move) = matching_move {
                 match matching_move.make_raw(&mut self.position) {
-                    Ok(_) => (self.on_move_done)(&move_san.unwrap()),
+                    Ok(_) => {
+                        let white_turn_before_move = self.position.side() == Color::Black;
+                        (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
+                    },
                     _ => {}
                 }
             }
@@ -295,7 +298,10 @@ impl ChessBoard {
 
         if let Ok(matching_move) = matching_move {
             match matching_move.make_raw(&mut self.position) {
-                Ok(_) => (self.on_move_done)(&move_san.unwrap()),
+                Ok(_) => {
+                    let white_turn_before_move = self.position.side() == Color::Black;
+                    (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
+                },
                 _ => {}
             }
         }

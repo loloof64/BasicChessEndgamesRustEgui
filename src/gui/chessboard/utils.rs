@@ -36,3 +36,25 @@ fn parse_promotion(piece: Option<char>) -> Option<PromotePiece> {
         other => panic!("Forbidden promote value : {}.", other),
     })
 }
+
+pub fn san_to_fan(move_san: String, white_move: bool) -> String {
+    let pieces_refs = String::from("NBRQK");
+    let first_piece_occurence = move_san.chars().position(|elem| pieces_refs.contains(elem));
+    match first_piece_occurence {
+        Some(index) => {
+            let occurence = move_san.chars().nth(index).unwrap();
+            let replacement = match occurence {
+                'N' => if white_move {'\u{2658}'} else {'\u{265e}'}, 
+                'B' => if white_move {'\u{2657}'} else {'\u{265d}'}, 
+                'R' => if white_move {'\u{2656}'} else {'\u{265c}'}, 
+                'Q' => if white_move {'\u{2655}'} else {'\u{265b}'}, 
+                'K' => if white_move {'\u{2654}'} else {'\u{265a}'},
+                _ => occurence, 
+            };
+            let first_part: String = move_san.chars().take(index).collect();
+            let last_part: String = move_san.chars().skip(index+1).collect();
+            format!("{}{}{}", first_part, replacement, last_part)
+        },
+        _ => move_san
+    }
+}
