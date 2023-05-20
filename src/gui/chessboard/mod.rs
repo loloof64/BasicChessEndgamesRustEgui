@@ -2,6 +2,7 @@ use eframe::{
     egui::{self, Rect, Ui},
     epaint::{Pos2, Vec2},
 };
+pub use eframe::epaint::Color32;
 
 use owlchess::{Board, Color, File, Make, Piece, Rank};
 
@@ -10,6 +11,69 @@ use self::{pieces_images::PiecesImages, utils::get_uci_move_for};
 mod painter;
 mod pieces_images;
 mod utils;
+
+pub struct Colors {
+    pub background: Color32,
+    pub white_cells: Color32,
+    pub black_cells: Color32,
+    pub dnd_start_cell: Color32,
+    pub dnd_end_cell: Color32,
+    pub dnd_cross_cell: Color32,
+    pub last_move_arrow: Color32,
+    pub coordinates: Color32,
+}
+
+impl Default for Colors {
+    fn default() -> Self {
+        Colors {
+            background: Color32::from_rgb(35, 136, 210),
+            white_cells: Color32::from_rgb(255, 222, 173),
+            black_cells: Color32::from_rgb(205, 133, 63),
+            dnd_start_cell: Color32::from_rgb(205, 92, 92),
+            dnd_end_cell: Color32::from_rgb(50, 205, 50),
+            dnd_cross_cell: Color32::from_rgb(255, 182, 193),
+            last_move_arrow: Color32::from_rgb(35, 136, 210),
+            coordinates: Color32::from_rgb(255, 220, 10),
+        }
+    }
+}
+
+#[allow(dead_code)]
+impl Colors {
+    pub fn set_background(&mut self, color: Color32) {
+        self.background = color;
+    }
+
+    pub fn set_white_cells(&mut self, color: Color32) {
+        self.white_cells = color;
+    }
+
+    pub fn set_black_cells(&mut self, color: Color32) {
+        self.black_cells = color;
+    }
+
+    pub fn set_drag_and_drop_start_cells(&mut self, color: Color32) {
+        self.dnd_start_cell = color;
+    }
+
+    pub fn set_drag_and_drop_end_cells(&mut self, color: Color32) {
+        self.dnd_end_cell = color;
+    }
+
+    pub fn set_drag_and_drop_cross_cells(&mut self, color: Color32) {
+        self.dnd_cross_cell = color;
+    }
+
+    pub fn set_last_move_arrow(&mut self, color: Color32) {
+        self.last_move_arrow = color;
+    }
+
+    pub fn set_coordinates(&mut self, color: Color32) {
+        self.coordinates = color;
+    }
+}
+
+
 
 #[derive(Debug)]
 pub(crate) struct DndData {
@@ -33,6 +97,7 @@ pub struct ChessBoard {
     dnd_data: Option<DndData>,
     last_move_arrow: Option<(u8, u8, u8, u8)>,
     on_move_done: Box<dyn Fn(&String) -> ()>,
+    colors: Colors,
 }
 
 impl ChessBoard {
@@ -45,7 +110,13 @@ impl ChessBoard {
             dnd_data: None,
             on_move_done,
             last_move_arrow: None,
+            colors: Colors::default(),
         }
+    }
+
+    #[allow(dead_code)]
+    pub fn set_colors(&mut self, colors: Colors) {
+        self.colors = colors;
     }
 
     pub fn widget(&mut self) -> impl egui::Widget + '_ {
@@ -81,7 +152,7 @@ impl ChessBoard {
         // 4. Paint!
         // Make sure we need to paint:
         if ui.is_rect_visible(rect) {
-            painter::draw_background(ui, rect);
+            painter::draw_background(ui, rect, &self.colors);
             painter::draw_cells(ui, rect, &self);
             painter::draw_last_move_arrow(ui, rect, &self);
             painter::draw_pieces(ui, rect, &self);
@@ -233,10 +304,13 @@ impl ChessBoard {
                             matching_move.src().rank().index() as u8,
                             matching_move.dst().file().index() as u8,
                             matching_move.dst().rank().index() as u8,
-                         ));
+                        ));
                         let white_turn_before_move = self.position.side() == Color::Black;
-                        (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
-                    },
+                        (self.on_move_done)(&utils::san_to_fan(
+                            move_san.unwrap(),
+                            white_turn_before_move,
+                        ));
+                    }
                     _ => {}
                 }
             }
@@ -315,10 +389,13 @@ impl ChessBoard {
                         matching_move.src().rank().index() as u8,
                         matching_move.dst().file().index() as u8,
                         matching_move.dst().rank().index() as u8,
-                     ));
+                    ));
                     let white_turn_before_move = self.position.side() == Color::Black;
-                    (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
-                },
+                    (self.on_move_done)(&utils::san_to_fan(
+                        move_san.unwrap(),
+                        white_turn_before_move,
+                    ));
+                }
                 _ => {}
             }
         }

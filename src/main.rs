@@ -1,8 +1,8 @@
 use eframe::{
     egui::{self, ImageButton},
-    epaint::Vec2,
+    epaint::{Vec2, Color32},
 };
-use gui::chessboard::ChessBoard;
+use gui::chessboard::{ChessBoard, Colors};
 
 mod gui;
 
@@ -55,6 +55,11 @@ impl eframe::App for MyApp {
                     };
                 });
                 ui.vertical_centered(|ui| {
+                    let mut board_colors = Colors::default();
+                    board_colors.set_last_move_arrow(Color32::from_rgb(12, 250, 12));
+                    board_colors.set_coordinates(Color32::from_rgb(250, 10, 20));
+                    board_colors.set_background(Color32::from_rgb(80, 150, 50));
+                    self.board.set_colors(board_colors);
                     ui.add(self.board.widget());
                 });
             });

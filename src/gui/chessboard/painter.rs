@@ -8,12 +8,12 @@ use eframe::{
 use owlchess::{Color, File, Rank};
 use std::ops::Add;
 
-use super::{utils::get_piece_type_from, ChessBoard, DndData};
+use super::{utils::get_piece_type_from, ChessBoard, DndData, Colors};
 
-pub(crate) fn draw_background(ui: &mut Ui, rect: Rect) {
+pub(crate) fn draw_background(ui: &mut Ui, rect: Rect, colors: &Colors) {
     ui.painter().add(Shape::Rect(RectShape {
         rect,
-        fill: Color32::from_rgb(35, 136, 210),
+        fill: colors.background,
         rounding: Rounding::none(),
         stroke: eframe::epaint::Stroke {
             width: 0.0,
@@ -57,18 +57,18 @@ pub(crate) fn draw_cells(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
             };
 
             let mut color = if white_cell {
-                Color32::from_rgb(255, 222, 173)
+                board.colors.white_cells
             } else {
-                Color32::from_rgb(205, 133, 63)
+                board.colors.black_cells
             };
             if is_dnd_start_cell {
-                color = Color32::from_rgb(205, 92, 92);
+                color = board.colors.dnd_start_cell;
             }
             if is_dnd_cross_cell {
-                color = Color32::from_rgb(255, 182, 193);
+                color = board.colors.dnd_cross_cell;
             }
             if is_dnd_end_cell {
-                color = Color32::from_rgb(50, 205, 50);
+                color = board.colors.dnd_end_cell;
             }
 
             let x = cells_size * (0.5 + col as f32) + rect.left();
@@ -175,7 +175,7 @@ pub(crate) fn draw_coordinates(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     let cells_size = size * 0.111;
 
     let font_size = cells_size * 0.4;
-    let text_color = Color32::from_rgb(255, 220, 10);
+    let text_color = board.colors.coordinates;
 
     for col in 0..=7 {
         let file = if board.reversed { 7 - col } else { col };
@@ -426,12 +426,12 @@ pub(crate) fn draw_promotion_buttons(ui: &mut Ui, rect: Rect, board: &mut ChessB
 
 pub(crate) fn draw_last_move_arrow(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
     match &board.last_move_arrow {
-        Some(arrow_coords) => draw_arrow(ui, rect, arrow_coords, board.reversed),
+        Some(arrow_coords) => draw_arrow(ui, rect, arrow_coords, board.reversed, board.colors.last_move_arrow),
         _ => {}
     }
 }
 
-fn draw_arrow(ui: &mut Ui, rect: Rect, arrow: &(u8, u8, u8, u8), reversed: bool) {
+fn draw_arrow(ui: &mut Ui, rect: Rect, arrow: &(u8, u8, u8, u8), reversed: bool, color: Color32) {
     let size = rect.size().x;
     let cells_size = size * 0.111;
 
@@ -478,20 +478,20 @@ fn draw_arrow(ui: &mut Ui, rect: Rect, arrow: &(u8, u8, u8, u8), reversed: bool)
             Pos2::new(start_offset.0, start_offset.1).add(component_offset),
             Pos2::new(end_offset.0, end_offset.1).add(component_offset),
         ],
-        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+        stroke: Stroke::new(half_block_size * 0.150, color),
     });
     ui.painter().add(Shape::LineSegment {
         points: [
             Pos2::new(end_offset.0,end_offset.1).add(component_offset),
             Pos2::new(arrow_point_1.0, arrow_point_1.1).add(component_offset),
         ],
-        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+        stroke: Stroke::new(half_block_size * 0.150, color),
     });
     ui.painter().add(Shape::LineSegment {
         points: [
             Pos2::new(end_offset.0,end_offset.1).add(component_offset),
             Pos2::new(arrow_point_2.0, arrow_point_2.1).add(component_offset),
         ],
-        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+        stroke: Stroke::new(half_block_size * 0.150, color),
     });
 }
