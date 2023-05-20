@@ -31,6 +31,7 @@ pub struct ChessBoard {
     position: Board,
     reversed: bool,
     dnd_data: Option<DndData>,
+    last_move_arrow: Option<(u8, u8, u8, u8)>,
     on_move_done: Box<dyn Fn(&String) -> ()>,
 }
 
@@ -43,6 +44,7 @@ impl ChessBoard {
             reversed: false,
             dnd_data: None,
             on_move_done,
+            last_move_arrow: None,
         }
     }
 
@@ -81,6 +83,7 @@ impl ChessBoard {
         if ui.is_rect_visible(rect) {
             painter::draw_background(ui, rect);
             painter::draw_cells(ui, rect, &self);
+            painter::draw_last_move_arrow(ui, rect, &self);
             painter::draw_pieces(ui, rect, &self);
             painter::draw_coordinates(ui, rect, self);
             painter::draw_player_turn(ui, rect, &self);
@@ -224,6 +227,13 @@ impl ChessBoard {
             if let Ok(matching_move) = matching_move {
                 match matching_move.make_raw(&mut self.position) {
                     Ok(_) => {
+                        // move has been validated
+                        self.last_move_arrow = Some((
+                            matching_move.src().file().index() as u8,
+                            matching_move.src().rank().index() as u8,
+                            matching_move.dst().file().index() as u8,
+                            matching_move.dst().rank().index() as u8,
+                         ));
                         let white_turn_before_move = self.position.side() == Color::Black;
                         (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
                     },
@@ -299,6 +309,13 @@ impl ChessBoard {
         if let Ok(matching_move) = matching_move {
             match matching_move.make_raw(&mut self.position) {
                 Ok(_) => {
+                    // move has been validated
+                    self.last_move_arrow = Some((
+                        matching_move.src().file().index() as u8,
+                        matching_move.src().rank().index() as u8,
+                        matching_move.dst().file().index() as u8,
+                        matching_move.dst().rank().index() as u8,
+                     ));
                     let white_turn_before_move = self.position.side() == Color::Black;
                     (self.on_move_done)(&utils::san_to_fan(move_san.unwrap(), white_turn_before_move));
                 },

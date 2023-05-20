@@ -1,9 +1,12 @@
 use core::ascii;
 use eframe::{
     egui::{ImageButton, Ui},
-    epaint::{Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape, Vec2},
+    epaint::{
+        Color32, FontId, Mesh, Pos2, Rect, RectShape, Rounding, Shape, Stroke, Vec2,
+    },
 };
 use owlchess::{Color, File, Rank};
+use std::ops::Add;
 
 use super::{utils::get_piece_type_from, ChessBoard, DndData};
 
@@ -261,7 +264,9 @@ pub(crate) fn draw_moved_piece(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
         };
 
         {
-            let piece_rect = if (board.reversed != dnd_data.started_with_reversed_board) && dnd_data.has_pending_promotion {
+            let piece_rect = if (board.reversed != dnd_data.started_with_reversed_board)
+                && dnd_data.has_pending_promotion
+            {
                 let center = rect.center();
                 let dnd_position = Pos2 {
                     x: dnd_data.x,
@@ -417,4 +422,76 @@ pub(crate) fn draw_promotion_buttons(ui: &mut Ui, rect: Rect, board: &mut ChessB
             board.commit_promotion('n');
         }
     }
+}
+
+pub(crate) fn draw_last_move_arrow(ui: &mut Ui, rect: Rect, board: &ChessBoard) {
+    match &board.last_move_arrow {
+        Some(arrow_coords) => draw_arrow(ui, rect, arrow_coords, board.reversed),
+        _ => {}
+    }
+}
+
+fn draw_arrow(ui: &mut Ui, rect: Rect, arrow: &(u8, u8, u8, u8), reversed: bool) {
+    let size = rect.size().x;
+    let cells_size = size * 0.111;
+
+    let block_size = cells_size;
+    let half_block_size = block_size / 2.0;
+
+    let (start_file, start_rank, end_file, end_rank) = arrow;
+    let (start_col, start_row, end_col, end_row) = if reversed {
+        (
+            7 - *start_file,
+            7 - *start_rank,
+            7 - *end_file,
+            7 - *end_rank,
+        )
+    } else {
+        (*start_file, *start_rank, *end_file, *end_rank)
+    };
+
+    let start_offset = (
+        (((start_col + 1) as f32) * block_size) - half_block_size,
+        (((start_row + 1) as f32) * block_size) - half_block_size,
+    );
+    let end_offset = (
+        (((end_col + 1) as f32) * block_size) - half_block_size,
+        (((end_row + 1) as f32) * block_size) - half_block_size,
+    );
+
+    let arrow_length = f32::sqrt(
+        f32::powf(end_offset.0 - start_offset.0, 2f32)
+            + f32::powf(end_offset.1 - start_offset.1, 2f32),
+    ) * 0.4;
+    let arrow_angle = f32::atan2(end_offset.1 - start_offset.1, end_offset.0 - start_offset.0);
+    let arrow_point_1 = (
+        end_offset.0 - arrow_length * f32::cos(arrow_angle + std::f32::consts::PI / 6f32),
+        end_offset.1 - arrow_length * f32::sin(arrow_angle + std::f32::consts::PI / 6f32),
+    );
+    let arrow_point_2 = (
+        end_offset.0 - arrow_length * f32::cos(arrow_angle - std::f32::consts::PI / 6f32),
+        end_offset.1 - arrow_length * f32::sin(arrow_angle - std::f32::consts::PI / 6f32),
+    );
+    let component_offset = Vec2::new(rect.min.x + cells_size * 0.5, rect.min.y + cells_size * 0.5);
+    ui.painter().add(Shape::LineSegment {
+        points: [
+            Pos2::new(start_offset.0, start_offset.1).add(component_offset),
+            Pos2::new(end_offset.0, end_offset.1).add(component_offset),
+        ],
+        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+    });
+    ui.painter().add(Shape::LineSegment {
+        points: [
+            Pos2::new(end_offset.0,end_offset.1).add(component_offset),
+            Pos2::new(arrow_point_1.0, arrow_point_1.1).add(component_offset),
+        ],
+        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+    });
+    ui.painter().add(Shape::LineSegment {
+        points: [
+            Pos2::new(end_offset.0,end_offset.1).add(component_offset),
+            Pos2::new(arrow_point_2.0, arrow_point_2.1).add(component_offset),
+        ],
+        stroke: Stroke::new(half_block_size * 0.150, Color32::from_rgb(35, 90, 210)),
+    });
 }
